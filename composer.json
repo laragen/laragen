@@ -1,0 +1,23 @@
+{
+    "name": "laragen/laragen",
+    "description": "A Generator for Laravel 5",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Johnny Wu",
+            "email": "wxs77577@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Laragen\\Laragen\\": "src/"
+        }
+    },
+    "require": {
+        "laravel/framework": "^5.0",
+        "doctrine/dbal": "^2.5",
+        "nette/php-generator": "^3"
+    }
+}
