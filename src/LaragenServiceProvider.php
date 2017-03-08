@@ -19,7 +19,7 @@ class LaragenServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/config/laragen.php' => config_path('laragen.php'),
-        ]);
+        ], 'laragen.config');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
