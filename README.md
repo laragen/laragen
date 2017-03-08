@@ -22,7 +22,7 @@
 1. Publish config files.
 
      ```bash
-     php artisan vendor:publish --tags=laragen.config
+     php artisan vendor:publish --tag=laragen.config
      ```
      
 ###Usage
@@ -116,6 +116,7 @@
     ```
     
 ###Config
+  
   ```php
   return [
       'model' => [
