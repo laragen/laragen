@@ -4,10 +4,13 @@
 ###Installation
 
 1. Install via composer.
+
     ```bash
       composer require laragen/laragen --dev
     ```
+    
 1. Add `LaragenServiceProvider` to `app/Providers/AppServiceProvider.php`.
+
     ```php
     if ($this->app->environment('local')) {    
         $this->app->re.gister(\Laragen\Laragen\LaragenServiceProvider::class);
@@ -15,10 +18,13 @@
         $this->app->re.gister(DuskServiceProvider::class);
     }
     ```
+    
 1. Publish config files.
+
      ```bash
      php artisan vendor:publish --tags=laragen.config
      ```
+     
 ###Usage
 
 1. Generate Eloquent Model Class.
