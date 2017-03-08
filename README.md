@@ -6,7 +6,7 @@
 1. Install via composer.
 
     ```bash
-      composer require laragen/laragen --dev
+    composer require laragen/laragen --dev
     ```
     
 1. Add `LaragenServiceProvider` to `app/Providers/AppServiceProvider.php`.
