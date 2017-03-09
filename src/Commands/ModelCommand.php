@@ -176,7 +176,7 @@ class ModelCommand extends Command
                 $class->addMethod(snake_case(str_plural($key)))->setBody('return $this->morphMany(' . studly_case(str_singular($key))
                     . '::class, ?);', [
                     snake_case($key) . 'able'
-                ])->setReturnType(HasMany::class);
+                ])->setReturnType(MorphMany::class);
             }
         }
 
