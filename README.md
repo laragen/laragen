@@ -2,7 +2,7 @@
 ####A powerful yet lightweight generator for Laravel 5.4  and php7
 
 ###Installation
-
+1. Add `"minimum-stability": "dev",` to your composer.json`
 1. Install via composer.
 
     ```bash
@@ -13,9 +13,7 @@
 
     ```php
     if ($this->app->environment('local')) {    
-        $this->app->re.gister(\Laragen\Laragen\LaragenServiceProvider::class);
-        $this->app->re.gister(IdeHelperServiceProvider::class);
-        $this->app->re.gister(DuskServiceProvider::class);
+        $this->app->register(\Laragen\Laragen\LaragenServiceProvider::class);
     }
     ```
     
