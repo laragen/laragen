@@ -79,11 +79,13 @@ class ModelCommand extends Command
         $path = config('laragen.model.path');
         $parentClass = config('laragen.model.parent_class', Model::class);
 
-        $className = studly_case(str_singular($name));
-        $plural = $tableName = snake_case(str_plural($name));
-        $singular = str_singular(snake_case($name));
-        $classFullName = implode('\\', array_filter(['App', $path, $className]));
-        $filePath = implode('/', array_filter([app_path(), $path, $className.'.php']));
+        $file = new PhpFile();
+        $classFile = new ClassFile($file, ['App', $path, $name]);
+
+        $className = $classFile->className;
+        $plural = $tableName = snake_case(str_plural($className));
+        $singular = str_singular(snake_case($className));
+        $classFullName = $classFile->classFullName;
 
         if (
         (in_array($tableName, config('laragen.model.ignore_tables')))
@@ -93,7 +95,6 @@ class ModelCommand extends Command
         } else {
             $this->info('[success] ' . $classFullName);
         }
-        $file = new PhpFile();
         $class = $file->addClass($classFullName);
         $namespace = $class->getNamespace();
         $namespace->addUse(Notifiable::class);
@@ -180,9 +181,7 @@ class ModelCommand extends Command
             }
         }
 
-        !is_dir(dirname($filePath)) && mkdir(dirname($filePath), 0777, true);
-        $file = strtr($file, ["\t" => '    ']);
-        file_put_contents($filePath, $file);
+        $classFile->save();
 
         return;
     }

@@ -22,7 +22,7 @@ return [
     ],
     'api' => [
         'path' => 'Api', // path after `app/Controllers/`
-        'version' => 1, // real path is `app/Controllers/{path}/V{version}`
+        'version' => 'V1', // real path is `app/Controllers/{path}/{version}`
         'parent_class' => 'App\Http\Controllers\Controller',
     ],
     'channel' => [

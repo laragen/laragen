@@ -8,12 +8,11 @@
 
 namespace Laragen\Laragen\Commands;
 
-use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 
 use Nette\PhpGenerator\PhpFile;
 
-class ApiCommand extends Command
+class ApiCommand extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -23,24 +22,14 @@ class ApiCommand extends Command
     protected $signature = 'laragen:api 
     {name : Controller class name without `Controller`, e.g. `User`}
     {--m|model : Whether generate `model()` function}
-    {--a|actions= : Generate some actions, e.g. `index,view`}';
+    {--actions= : Generate some actions, e.g. `index,view`}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate api controller from table';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    protected $description = 'Generate api controller';
 
     /**
      * @param PhpFile $file
@@ -52,26 +41,13 @@ class ApiCommand extends Command
         $model = $this->option('model');
         $path = config('laragen.api.path');
         $version = config('laragen.api.version');
+        $suffix = 'Controller';
 
-        $className = studly_case($name). 'Controller';
-        $classFullName = implode('\\', array_filter([
-            'App',
-            'Http',
-            'Controllers',
-            $path,
-            $version ? 'V'.$version : null,
-            $className
-        ]));
-        $filePath = implode('/', array_filter([
-            app_path(),
-            'Http',
-            'Controllers',
-            $path,
-            $version ? 'V'.$version : null,
-            $className . '.php'
-        ]));
+        $classFile = new ClassFile($file, [
+            'App','Http', 'Controllers', $path, $version, $name . $suffix
+        ]);
 
-        $class = $file->addClass($classFullName);
+        $class = $file->addClass($classFile->classFullName);
         $parentClass = config('laragen.api.parent_class');
         $namespace = $class->getNamespace();
 
@@ -81,7 +57,7 @@ class ApiCommand extends Command
 
         if ($model) {
             $modelClassName = studly_case($name);
-            $modelClassFullName = implode('\\', array_filter(['App', config('laragen.model.path'), $modelClassName]));
+            $modelClassFullName = ClassFile::toClassFullName(['App', config('laragen.model.path'), $modelClassName]);
             $namespace->addUse($modelClassFullName);
             $class->addMethod('model')
                 ->setBody('return '.$modelClassName.'::class;')
@@ -93,9 +69,7 @@ class ApiCommand extends Command
             $class->addMethod($action);
         }
 
-        !is_dir(dirname($filePath)) && mkdir(dirname($filePath), 0777, true);
-        file_put_contents($filePath, $file);
-        $this->info('[success] ' . $classFullName);
-
+        $classFile->save();
+        $this->info('[success] ' . $classFile->classFullName);
     }
 }
