@@ -62,7 +62,7 @@ class ModelCommand extends Command
         $this->dsm = $dbm->connection()->getDoctrineSchemaManager();
         if ($all) {
             $tables = $this->dsm->listTables();
-            foreach($tables as $table) {
+            foreach ($tables as $table) {
                 $className = studly_case(str_singular($table->getName()));
                 $this->generateModel($className);
             }
@@ -88,9 +88,10 @@ class ModelCommand extends Command
         $classFullName = $classFile->classFullName;
 
         if (
-        (in_array($tableName, config('laragen.model.ignore_tables')))
-        || (strpos($tableName, 'admin_') === 0 && config('laragen.model.ignore_admin_tables'))) {
-            $this->line('ignore: '. $tableName);
+            (in_array($tableName, config('laragen.model.ignore_tables')))
+            || (strpos($tableName, 'admin_') === 0 && config('laragen.model.ignore_admin_tables'))
+        ) {
+            $this->line('ignore: ' . $tableName);
             return;
         } else {
             $this->info('[success] ' . $classFullName);
@@ -140,35 +141,62 @@ class ModelCommand extends Command
         $tables = $dsm->listTables();
         //belongs to
         foreach ($keys as $key) {
+
             $foreign = $key->getForeignTableName();
-            $class->addMethod(snake_case(str_singular($foreign)))->setBody('return $this->belongsTo(' . studly_case(str_singular($foreign))
-                . '::class);')->setReturnType(BelongsTo::class);
+            $localColumnName = implode('_', $key->getLocalColumns());
+            $localName = strtr(implode('_', $key->getLocalColumns()), ['_id' => '']);
+            $foreignName = str_singular($foreign);
+            $class->addMethod($localName)->setBody('return $this->belongsTo(' . studly_case($foreignName)
+                . '::class' . ($foreignName != $localName ? ",'" . $localColumnName . "'" : '')
+                . ');')->setReturnType(BelongsTo::class)
+                ->addComment('Get ' . $localName)
+                ->addComment('@return BelongsTo');
         }
         unset($keys);
         //hasMany
         foreach ($tables as $tbl) {
             $keys = $tbl->getForeignKeys();
             $name = $tbl->getName();
+
             foreach ($keys as $key) {
+                $i = 0;
                 if ($key->getForeignTableName() === $tableName) {
                     $tblSingular = str_singular($name);
                     $tblPlural = str_plural($name);
-                    //is morph many
-                    if ($tbl->hasColumn($tblSingular . 'able_id') && $tbl->hasColumn($tblSingular . 'able_type')) {
+                    $methodName = camel_case($tblPlural);
+                    $isConflict = false;
+                    while (isset($class->methods[$methodName])) {
+                        $isConflict = true;
+                        $methodName .= ++$i;
+                    }
 
-                    } else {
-                        $class->addMethod(snake_case($tblPlural))->setBody('return $this->hasMany(' . studly_case(str_singular($name))
-                            . '::class);')->setReturnType(HasMany::class);
+
+                    $method = $class->addMethod($methodName);
+                    $hasManyClassName = studly_case(str_singular($name));
+                    $localColumnName = implode('_', $key->getLocalColumns());
+                    $localName = strtr(implode('_', $key->getLocalColumns()), ['_id' => '']);
+                    $foreignName = str_singular($tableName);
+
+                    $method->addBody('return $this->hasMany(' . $hasManyClassName . '::class' .
+                        (($foreignName !== $localName) || $isConflict ? ",'" . $localColumnName . "'" : '') . ');')
+                        ->addComment('Get ' . $tblPlural)
+                        ->addComment('@return HasMany')
+                        ->setReturnType(HasMany::class);
+                    if ($isConflict) {
+                        $method->addComment('TODO Maybe you should change the name of this relation');
                     }
                 }
             }
         }
 
 
-
         //morphMany
         if ($table->hasColumn($singular . 'able_id') && $table->hasColumn($singular . 'able_type')) {
-            $class->addMethod($singular . 'able')->setBody('return $this->morphTo();')->setReturnType(MorphTo::class);
+            $class->addMethod($singular . 'able')
+                ->setBody('return $this->morphTo();')
+                ->setReturnType(MorphTo::class)
+                ->addComment('Get ' . $singular . 'able model')
+                ->addComment('@return MorphTo');
         }
 
         $morphMany = config('laragen.model.morph_many', []);
@@ -177,7 +205,9 @@ class ModelCommand extends Command
                 $class->addMethod(snake_case(str_plural($key)))->setBody('return $this->morphMany(' . studly_case(str_singular($key))
                     . '::class, ?);', [
                     snake_case($key) . 'able'
-                ])->setReturnType(MorphMany::class);
+                ])->setReturnType(MorphMany::class)
+                    ->addComment('Get ' . snake_case(str_plural($key)))
+                    ->addComment('@return MorphMany');
             }
         }
 
