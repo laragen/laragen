@@ -27,6 +27,10 @@ return [
     ],
     'channel' => [
         'path' => 'Channels',
-        'message_path' => 'Messages',
     ],
+    'message' => [
+        'path' => 'Channels/Messages',
+    ],
+
+
 ];
