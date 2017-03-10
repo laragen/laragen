@@ -9,15 +9,13 @@
             "email": "wxs77577@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Laragen\\Laragen\\": "src/"
         }
     },
     "require": {
-        "laravel/framework": "^5.0",
         "doctrine/dbal": "^2.5",
-        "nette/php-generator": "^3"
+        "nette/php-generator": "^v3.0.0-beta2"
     }
 }
