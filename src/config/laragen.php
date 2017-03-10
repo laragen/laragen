@@ -25,4 +25,8 @@ return [
         'version' => 1, // real path is `app/Controllers/{path}/V{version}`
         'parent_class' => 'App\Http\Controllers\Controller',
     ],
+    'channel' => [
+        'path' => 'Channels',
+        'message_path' => 'Messages',
+    ],
 ];

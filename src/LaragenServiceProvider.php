@@ -4,6 +4,7 @@ namespace Laragen\Laragen;
 
 use Illuminate\Support\ServiceProvider;
 use Laragen\Laragen\Commands\ApiCommand;
+use Laragen\Laragen\Commands\ChannelCommand;
 use Laragen\Laragen\Commands\ModelCommand;
 
 /**
@@ -25,6 +26,7 @@ class LaragenServiceProvider extends ServiceProvider
             $this->commands([
                 ModelCommand::class,
                 ApiCommand::class,
+                ChannelCommand::class,
             ]);
         }
     }
