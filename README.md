@@ -2,7 +2,6 @@
 ####A powerful yet lightweight generator for Laravel 5.4  and php7
 
 ###Installation
-1. Add `"minimum-stability": "dev",` to your composer.json`
 1. Install via composer.
 
     ```bash
@@ -23,94 +22,18 @@
      php artisan vendor:publish --tag=laragen.config
      ```
      
-###Usage
-
-1. Generate Eloquent Model Class.
+###Quick Look
     ```bash
     php artisan laragen:model User
     php artisan laragen:model --all
-    ```
     
-    Looks like this:
-    ```php
-    <?php
-    namespace App\Models;
-    
-    use Illuminate\Database\Eloquent\Model;
-    use Illuminate\Database\Eloquent\Relations\BelongsTo;
-    use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-    use Illuminate\Database\Eloquent\Relations\HasMany;
-    use Illuminate\Database\Eloquent\Relations\MorphMany;
-    use Illuminate\Database\Eloquent\Relations\MorphTo;
-    use Illuminate\Database\Eloquent\SoftDeletes;
-    use Illuminate\Notifications\Notifiable;
-    
-    class Comment extends Model
-    {
-        use SoftDeletes;
-    
-        public $fillable = ['user_id', 'commentable_id', 'commentable_type', 'content'];
-    
-        public $casts = [];
-    
-        public $appends = [];
-    
-        public $dates = ['deleted_at'];
-    
-    
-        public function user(): BelongsTo
-        {
-            return $this->belongsTo(User::class);
-        }
-    
-    
-        public function commentable(): MorphTo
-        {
-            return $this->morphTo();
-        }
-    
-    }
-
-    ```
-1. Generate Api Controller Class.
-    ```bash
     php artisan laragen:api User
     php artisan laragen:api User --model --actions=index,view
-    php artisan laragen:api User -m -a=index,view
-    ```
     
-    Looks like this:
-    
-    ```php
-    <?php
-    namespace App\Http\Controllers\Api\V1;
-    
-    use App\Http\Controllers\Controller;
-    use App\Models\News;
-    use Illuminate\Http\Request;
-    
-    class NewsController extends Controller
-    {
-    
-    	/**
-    	 * Specify Model class name
-    	 */
-    	public function model(): string
-    	{
-    		return News::class;
-    	}
-    
-    
-    	public function index()
-    	{
-    	}
-    
-    
-    	public function view()
-    	{
-    	}
-    
-    }
+    php artisan laragen:channel Sms
+    php artisan laragen:channel Sms --message=mobile,content
+    php artisan laragen:message Sms
+    php artisan laragen:message Sms --attributes=mobie,content
     ```
     
 ###Config
@@ -137,5 +60,56 @@
       ],
   ];
   ```
+  
+###Sample Output
+
+1. Generate Eloquent Model Class.
+    ```php
+    <?php
+    namespace App\Models;
+    
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
+    use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+    use Illuminate\Database\Eloquent\Relations\HasMany;
+    use Illuminate\Database\Eloquent\Relations\MorphMany;
+    use Illuminate\Database\Eloquent\Relations\MorphTo;
+    use Illuminate\Database\Eloquent\SoftDeletes;
+    use Illuminate\Notifications\Notifiable;
+    
+    class Comment extends Model
+    {
+        use SoftDeletes;
+    
+        public $fillable = ['user_id', 'content', 'commentable_id', 'commentable_type'];
+    
+        public $casts = [];
+    
+        public $appends = [];
+    
+        public $dates = ['deleted_at'];
+    
+    
+        /**
+         * Get user
+         * @return BelongsTo
+         */
+        public function user(): BelongsTo
+        {
+            return $this->belongsTo(User::class);
+        }
+    
+    
+        /**
+         * Get commentable model
+         * @return MorphTo
+         */
+        public function commentable(): MorphTo
+        {
+            return $this->morphTo();
+        }
+    
+    }
+    ```
   
 ##Any issue or pull request is appreciated :)
