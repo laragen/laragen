@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Notifications\Notifiable;
@@ -105,6 +106,7 @@ class ModelCommand extends Command
         $namespace->addUse(BelongsToMany::class);
         $namespace->addUse(MorphMany::class);
         $namespace->addUse(MorphTo::class);
+        $namespace->addUse(MorphToMany::class);
 
         if ($className == 'User') {
             $class->addExtend(User::class);
@@ -157,17 +159,22 @@ class ModelCommand extends Command
         foreach ($tables as $tbl) {
             $keys = $tbl->getForeignKeys();
             $name = $tbl->getName();
-
             foreach ($keys as $key) {
                 $i = 0;
                 if ($key->getForeignTableName() === $tableName) {
                     $tblSingular = str_singular($name);
                     $tblPlural = str_plural($name);
                     $methodName = camel_case($tblPlural);
+
+
                     $isConflict = false;
                     while (isset($class->methods[$methodName])) {
                         $isConflict = true;
                         $methodName .= ++$i;
+                    }
+
+                    if (substr($methodName, -5) == 'ables') {
+                        continue;
                     }
 
 
@@ -191,7 +198,12 @@ class ModelCommand extends Command
 
 
         //morphMany
-        if ($table->hasColumn($singular . 'able_id') && $table->hasColumn($singular . 'able_type')) {
+        $morphMany = config('laragen.model.morph_many', []);
+        if (
+            in_array($className, array_keys($morphMany))
+            && $table->hasColumn($singular . 'able_id')
+            && $table->hasColumn($singular . 'able_type')
+        ) {
             $class->addMethod($singular . 'able')
                 ->setBody('return $this->morphTo();')
                 ->setReturnType(MorphTo::class)
@@ -199,7 +211,7 @@ class ModelCommand extends Command
                 ->addComment('@return MorphTo');
         }
 
-        $morphMany = config('laragen.model.morph_many', []);
+
         foreach ($morphMany as $key => $models) {
             if (in_array($className, $models)) {
                 $class->addMethod(snake_case(str_plural($key)))->setBody('return $this->morphMany(' . studly_case(str_singular($key))
@@ -208,6 +220,32 @@ class ModelCommand extends Command
                 ])->setReturnType(MorphMany::class)
                     ->addComment('Get ' . snake_case(str_plural($key)))
                     ->addComment('@return MorphMany');
+            }
+        }
+
+        //morphToMany
+        $morphToMany = config('laragen.model.morph_to_many', []);
+//        $isTo = in_array($className, array_keys($morphToMany));
+        foreach ($morphToMany as $key => $models) {
+//            echo $key, PHP_EOL;
+            $keyName = snake_case(str_plural($key));
+            $able = snake_case($key) . 'able';
+
+            if ($className == $key) {
+                foreach ($models as $modelName) {
+                    $class->addMethod(snake_case(str_plural($modelName)))
+                        ->setBody('return $this->morphedByMany('.$modelName.'::class, ?);', [$able])
+                        ->setReturnType(MorphToMany::class)
+                        ->addComment('Get ' . str_plural($modelName))
+                        ->addComment('@return MorphToMany');
+                }
+            }
+
+            if (in_array($className, $models)) {
+                $class->addMethod($keyName)->setBody('return $this->morphToMany(' . studly_case(str_singular($key))
+                    . '::class, ?);', [ $able ])->setReturnType(MorphToMany::class)
+                    ->addComment('Get ' . $keyName)
+                    ->addComment('@return MorphToMany');
             }
         }
 

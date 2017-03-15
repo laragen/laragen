@@ -18,7 +18,10 @@ return [
             'Comment' => ['News', 'Post'],
             'Like' => ['News', 'Post'],
         ],
-
+        'morph_to_many' => [ //morphToMany
+            'Category' => ['News', 'Post'],
+            'Property' => ['News', 'Post', 'Press', 'Reading'],
+        ],
     ],
     'api' => [
         'path' => 'Api', // path after `app/Controllers/`
